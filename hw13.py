@@ -89,3 +89,36 @@ class  ImageRequest(RequestStrategy):
         # Print the content of the response
         result = {'role': 'assistant', 'content': chat_response.choices[0].message.content}
         return result
+    
+# фасад для объединения функционала и удобного взаимодействия пользователя с системой
+class  ChatFacade:  
+    """
+    Создание экземпляров стратегий и инициализация модели 
+    """
+    def __init__(self, api_key: str) -> None: 
+        self.api_key = api_key
+        self.models: dict[str, list[str]] = {'text':["mistral-large-latest"], 'image':["pixtral-12b-2409"]}
+        self.request: TextRequest|ImageRequest = self.change_strategy()
+        self.model: str = self.__set_model()
+        self.history:list[Any]= []
+        
+    #  Инициализация с API-ключом. Создаются экземпляры `TextRequest` и `ImageRequest`, а также инициализируется список доступных моделей.
+    def change_strategy(self) -> TextRequest|ImageRequest:
+        mode:str = input('Укажите тип запроса: 1 – текстовый, 2 – с изображением: ')
+        if mode == '1':
+            self.mode = '1'
+            return TextRequest(api_key=self.api_key)
+        elif mode == '2':
+            self.mode = '2'
+            return ImageRequest(api_key=self.api_key)
+        else:
+            raise ValueError("Неверныый режим запроса")
+        
+    def __set_model(self) -> str: 
+        if self.mode == '1':
+            model:str = "mistral-large-latest"
+        
+        if self.mode == '2':
+            model:str = "pixtral-12b-2409"
+
+        return model    
