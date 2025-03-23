@@ -122,3 +122,30 @@ class  ChatFacade:
             model:str = "pixtral-12b-2409"
 
         return model    
+
+    #  Метод для загрузки изображения (если выбран режим с изображением). Отвечает за валидацию пути и преобразование изображения в Base64 (может делегировать эту задачу классу `ImageRequest`).
+    def ask_question(self, text: str, image_path: str = None) -> dict:
+        user_message = {'role': 'user', 'content': text}
+        current_history = [msg for _, msg in self.history]
+
+        if image_path:
+            response:dict[Any, Any] = self.request.execute(text=text, image_path=image_path, history=current_history, model=self.model)
+        else: 
+            response:dict[Any, Any] = self.request.execute(text=text, history=current_history, model=self.model)
+        self.history.append((text, user_message))
+        self.history.append((text, response))
+        return response
+    
+    def __call__(self):
+        # text:str = input('\n Введите текст запроса')
+        text:str = 'расскажи шутку про французов'
+        image_path = None
+        if isinstance (self.request, ImageRequest):
+            # image_path:str = input('ВВедите путь к изображению') 
+            text:str = 'опиши картинку'
+            image_path:str = 'lemon.jpg'
+        response:dict[Any, Any] = self.ask_question(text=text, image_path=image_path if image_path else None)
+        print(response)
+
+chat_facade = ChatFacade(api_key=API_KEY)
+chat_facade()
